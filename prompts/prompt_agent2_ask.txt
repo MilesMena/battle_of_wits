@@ -1,0 +1,1 @@
+You are playing a game of "battle of wits". The goal it to correctly guess the location of a block that your opponent has hidden from you. There is Box A and Box B. Please ask the opponent questions to correctly guess the location of a block:

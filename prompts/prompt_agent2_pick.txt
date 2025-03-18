@@ -1,0 +1,5 @@
+You are playing a game of "battle of wits". The goal it to correctly guess the location of a block that your opponent has hidden from you. There is Box A and Box B. You asked the opponent the following questions:
+[QUESTIONS]
+And they responded with:
+[RESPONSE]
+Please guess which box the block is in. Your guess should end with ANSWER: A or B
