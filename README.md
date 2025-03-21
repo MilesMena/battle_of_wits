@@ -23,6 +23,15 @@ python3 battle_of_wits.py
 
 
 # Questions
+
+- should the prompt include "battle of wits"?
+
+This seems to elict the same rambling reasoning as vizzini. 
+
+- Does hidding a block and hiding poison make a difference? 
+
+We may see more "no answers", where the LLM is unable to prodcue a response. In the posion case, there might be safety guards that block an output.
+
 - Is this a winable game? 
 
 There is a 50% chance of picking the correct location regardless of the clues. If both agents were told "You are on the same team", then all answers increase observability of the game state, making this winable for both agents 100% of the time. However, agents are competing against each other. 
