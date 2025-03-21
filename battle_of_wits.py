@@ -1,6 +1,5 @@
 import ollama
 import time
-import logging
 import os
 import csv
 import re
@@ -22,7 +21,7 @@ class BattleOfWits():
         self.location = location
         # self.questions = ""
         # self.response = ""
-        self.csv_path = "/home/arpg-miles/code/battle_of_wits/results.csv"
+        self.csv_path = f"/home/arpg-miles/code/battle_of_wits/{model}_output.csv"
         self.ensure_csv_header()
         self.exec_times = []
 
@@ -33,16 +32,6 @@ class BattleOfWits():
             with open(self.csv_path, mode='w', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerow(["Iteration", "Execution Time (s)", "Questions", "Response", "Answer"])
-        self.config_logging('BattleOfWits.log')
-
-
-    def config_logging(self, log_fname):
-        # Configure logging
-        logging.basicConfig(
-            filename=log_fname,  # Log file
-            level=logging.INFO,  # Logging level
-            format='%(asctime)s - %(levelname)s - %(message)s'  # Format
-        )
 
     def read_txt(self, filename):
         with open(filename, "r") as file:
@@ -62,13 +51,11 @@ class BattleOfWits():
     ## Can't be named chat bc ollama
     def send_chat(self, prompt):
         m = [{'role': 'user', 'content': prompt}]  # Make it a list
-        # logging.info(message)
         response = ollama.chat(model=self.model,messages = m)
         return response['message']['content']
     
     def single_battle(self, iter):
         start_time = time.time()  # Record the start time
-        # print(f"==============={iter}: Battle of Wits=================")
         gen_questions_prompt = self.read_txt("prompts/prompt_agent2_ask.txt")
         questions = self.send_chat(gen_questions_prompt)
         # ANSWER Question
@@ -78,7 +65,6 @@ class BattleOfWits():
         # PICK box
         pick_box_prompt = self.read_txt("prompts/prompt_agent2_pick.txt")
         filled_pick_box_prompt = self.replace_prompt_vars(pick_box_prompt, {'questions':questions, 'response':response})
-        # logging.info(f"PICK BOX PROMPT {filled_ans_q_prompt}")
         answer = self.send_chat(filled_pick_box_prompt)
         end_time = time.time()  # Record the end time
         execution_time = end_time - start_time
@@ -100,7 +86,13 @@ class BattleOfWits():
             pool.join()
     
     def write_to_csv(self, res):
-        with open(self.csv_path, mode='a', newline='') as file:
+        if not os.path.exists("results"):
+            os.mkdir("results")
+        if not os.path.exist(f"results/{self.model}"):
+            os.mkdir(f"results/{self.model}")
+
+
+        with open(f"results/{self.model}" + self.csv_path, mode='a', newline='') as file:
             writer = csv.writer(file, quoting=csv.QUOTE_ALL)
             writer.writerow(res)
 
@@ -109,16 +101,18 @@ class BattleOfWits():
         text = re.sub(r',', '<COMMA>', text)
         text = re.sub(r'\r?\n', '<NEWLINE>', text)
         return text
-    
 
 
 if __name__ == "__main__":
 
-    bw = BattleOfWits("gemma:2b", "A")
+    bw = BattleOfWits("gemma:7b", "A")
 
 
     # bw.multi_battle(5)
-    bw.async_multi_battle(10, 4) # 4 workers uses %538 of %1200 (I have 12 cores)
+    # 4 workers (gemma:2b) uses %538 of %1200 (I have 12 cores)
+    # 4 workers (gemma:7b) uses %600 
+
+    bw.async_multi_battle(100, 4) 
 
     # mean = np.mean(bw.exec_times)
     # std = np.std(bw.exec_times)

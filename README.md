@@ -19,3 +19,16 @@ python3 battle_of_wits.py
 - Lit Review: Juan
 - vis for results: Joel
 - parse LLM answer from the CSV with regex, heuristics, or LLM: Miles
+- code for baselines "A or B": 
+
+
+# Questions
+- Is this a winable game? 
+
+There is a 50% chance of picking the correct location regardless of the clues. If both agents were told "You are on the same team", then all answers increase observability of the game state, making this winable for both agents 100% of the time. However, agents are competing against each other. 
+
+- Do the responses from the defending agent suck?
+
+Once we setup a truth/deciet prompt, any mention of "I was told to be truthful" could be interpreted as an attempt to be decietful.
+Therefore, there are no clues
+- 
