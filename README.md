@@ -20,6 +20,9 @@ python3 battle_of_wits.py
 - vis for results: Joel
 - parse LLM answer from the CSV with regex, heuristics, or LLM: Miles
 - code for baselines "A or B": 
+- Fix hardcoded output.csv
+- where do you think the asking agent thinks it is?
+- Does the length of question list increase accuracy?
 
 
 # Questions
@@ -41,3 +44,14 @@ There is a 50% chance of picking the correct location regardless of the clues. I
 Once we setup a truth/deciet prompt, any mention of "I was told to be truthful" could be interpreted as an attempt to be decietful.
 Therefore, there are no clues
 - 
+
+
+
+Diplomacy corpora -> people speaking
+how do you get some kind of evaulation
+theory of mind
+what connections do we make
+
+
+
+
