@@ -16,13 +16,17 @@ python3 battle_of_wits.py
 
 
 # TODO
-- Lit Review: Juan
-- vis for results: Joel
-- parse LLM answer from the CSV with regex, heuristics, or LLM: Miles
-- code for baselines "A or B": 
-- Fix hardcoded output.csv
-- where do you think the asking agent thinks it is?
-- Does the length of question list increase accuracy?
+
+Miles:
+- Lit review
+- DONE: parse LLM answer from the CSV with regex, heuristics, or LLM
+-
+
+Joel:
+- add relative path instead of full path.
+-add a restrictions to the amount of questions
+-visualize the results
+-
 
 
 # Questions

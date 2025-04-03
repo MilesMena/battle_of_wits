@@ -21,7 +21,7 @@ class BattleOfWits():
         self.location = location
         # self.questions = ""
         # self.response = ""
-        self.csv_path = f"/home/arpg-miles/code/battle_of_wits/{model}_output.csv"
+        self.csv_path = f"/Users/joelcarlson/Library/Mobile Documents/com~apple~CloudDocs/Masters/2025-Spring/LLMs/battle_of_wits/results/{model}/{model}_output.csv"
         self.ensure_csv_header()
         self.exec_times = []
 
