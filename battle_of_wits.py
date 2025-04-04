@@ -27,8 +27,6 @@ class BattleOfWits():
 
         file_name = f"{model}_output.csv"
         self.csv_path = os.path.join(results_path, file_name)
-        # does file exist:
-        
         self.ensure_csv_header()
         self.exec_times = []
 
