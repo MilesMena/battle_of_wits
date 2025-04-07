@@ -93,11 +93,11 @@ class BattleOfWits():
     def write_to_csv(self, res):
         if not os.path.exists("results"):
             os.mkdir("results")
-        if not os.path.exist(f"results/{self.model}"):
+        if not os.path.exists(f"results/{self.model}"):
             os.mkdir(f"results/{self.model}")
 
 
-        with open(f"results/{self.model}" + self.csv_path, mode='a', newline='') as file:
+        with open(self.csv_path, mode='a', newline='') as file:
             writer = csv.writer(file, quoting=csv.QUOTE_ALL)
             writer.writerow(res)
 
@@ -110,7 +110,7 @@ class BattleOfWits():
 
 if __name__ == "__main__":
 
-    bw = BattleOfWits("gemma:7b", "A")
+    bw = BattleOfWits("gemma:2b", "A")
 
 
     # bw.multi_battle(5)
