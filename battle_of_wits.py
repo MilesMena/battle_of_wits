@@ -16,17 +16,28 @@ def time_me(func):
         return result
 
 class BattleOfWits():
-    def __init__(self, model, location, defend_disp,ask_belief):
+    def __init__(self, model, prompt_shot, location, defend_disp, ask_belief):
+        '''
+        Arguments:
+            Inputs: 
+                model: str - the model to use
+                prompt_shot: int - the number of prompt shots to use: current options are 0, 1, or 2
+                location: str - the location of the block aka poison
+                defend_disp: str - the Defending disposition of the agent, aka truthful or deceitful )
+                ask_belief: str - the Asking Agent's belief of what the defending agent's disposition is 
+            Attributes:
+                csv_path: str - the location of the output csv file
+                exec_times: list - a list of execution times for each 
+                    Goes as follows: start timer, ask question, get response, pick box, end timer
+        '''
         self.model = model
+        self.prompt_shot = prompt_shot
         self.location = location
         self.defending_disposition = defend_disp
         self.asking_belief = ask_belief
-        # self.questions = ""
-        # self.response = ""
-        # Relative Path here:
+        
         rel_path = os.path.dirname(__file__)
         results_path = os.path.join(rel_path, f"results/{model}")
-
         file_name = f"{model}_output.csv"
         self.csv_path = os.path.join(results_path, file_name)
         self.ensure_csv_header()
@@ -35,7 +46,10 @@ class BattleOfWits():
 
 
     def ensure_csv_header(self):
-        # Check if the CSV file exists and has content
+        ''' 
+            Check if the CSV file exists and has content
+            If the file is empty, writes the header
+        '''
         file_exists = os.path.isfile(self.csv_path)
         if not file_exists or os.stat(self.csv_path).st_size == 0:
             with open(self.csv_path, mode='w', newline='') as file:
@@ -122,14 +136,15 @@ class BattleOfWits():
 
 
 if __name__ == "__main__":
+    prompt_shot = 0 #0,1,2
     dispositions = ["Truthful", "Deceitful"]
     locations = ["A","B"]
     rounds_per = 50
 
     for i in range(2):
         for j in range(2):
-            bw = BattleOfWits("gemma:7b", locations[0], dispositions[i], dispositions[j])
-            bw.async_multi_battle(rounds_per, 4) 
+            bw = BattleOfWits("gemma:7b", prompt_shot, locations[0], dispositions[i], dispositions[j])
+            bw.async_multi_battle(rounds_per, 4)
 
     # bw.multi_battle(5)
     # 4 workers (gemma:2b) uses %538 of %1200 (I have 12 cores)

@@ -28,6 +28,8 @@ Joel:
 - visualize the results
 - Add few shot prompting
     - 1-2 example: question and answer
+    - change the csv and filepath
+    - add a few shot example to the prompt
 
 
 maybe: 
