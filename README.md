@@ -23,10 +23,12 @@ Miles:
 -
 
 Joel:
-- add relative path instead of full path.
--add a restrictions to the amount of questions
--visualize the results
--
+- DONE: add relative path instead of full path.
+- add a restrictions to the amount of questions
+- visualize the results
+- Add few shot prompting
+    - 1-2 example: question and answer
+
 
 
 # Questions
