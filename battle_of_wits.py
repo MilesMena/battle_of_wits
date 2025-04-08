@@ -124,14 +124,18 @@ class BattleOfWits():
 if __name__ == "__main__":
     dispositions = ["Truthful", "Deceitful"]
     locations = ["A","B"]
-    bw = BattleOfWits("gemma:2b", locations[0], dispositions[0], dispositions[0])
+    rounds_per = 50
 
+    for i in range(2):
+        for j in range(2):
+            bw = BattleOfWits("gemma:7b", locations[0], dispositions[i], dispositions[j])
+            bw.async_multi_battle(rounds_per, 4) 
 
     # bw.multi_battle(5)
     # 4 workers (gemma:2b) uses %538 of %1200 (I have 12 cores)
     # 4 workers (gemma:7b) uses %600 
 
-    bw.async_multi_battle(100, 4) 
+    
 
     # mean = np.mean(bw.exec_times)
     # std = np.std(bw.exec_times)
