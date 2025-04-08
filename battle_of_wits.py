@@ -26,6 +26,7 @@ class BattleOfWits():
                 defend_disp: str - the Defending disposition of the agent, aka truthful or deceitful )
                 ask_belief: str - the Asking Agent's belief of what the defending agent's disposition is 
             Attributes:
+                rel_path: str - the relative path to the current file, ulitzed multiple times so defined in class. can be changed
                 csv_path: str - the location of the output csv file
                 exec_times: list - a list of execution times for each 
                     Goes as follows: start timer, ask question, get response, pick box, end timer
@@ -36,7 +37,7 @@ class BattleOfWits():
         self.defending_disposition = defend_disp
         self.asking_belief = ask_belief
         
-        rel_path = os.path.dirname(__file__)
+        self.rel_path = os.path.dirname(__file__)
         results_path = os.path.join(rel_path, f"results/{model}")
         file_name = f"{model}_output.csv"
         self.csv_path = os.path.join(results_path, file_name)
@@ -56,6 +57,25 @@ class BattleOfWits():
                 writer = csv.writer(file)
                 writer.writerow(["Iteration", "Execution Time (s)", "Location", "Defending Disposition", "Asking Belief", "Questions", "Response", "Answer"])
 
+    def ensure_prompt_dirs(self):
+        '''
+            Check if the prompt directory exists
+            If not, create it. 
+            Will only create the directory based on which shot is being created
+            directory structure:
+                prompts/
+                    prompt_shot_#/
+
+        '''
+        prompts_dir = os.path.join(self.rel_path, "prompts")
+        prompt_shot_dir = os.path.join(prompts_dir, f"prompt_shot_{self.prompt_shot}")
+        if not os.path.exists(prompts_dir):
+            os.mkdir(prompts_dir)
+        if not os.path.exists(prompt_shot_dir):
+            os.mkdir(prompt_shot_dir)
+        # Might use this
+        # return prompt_shot_dir
+    
     def read_txt(self, filename):
         with open(filename, "r") as file:
             content = file.read()
