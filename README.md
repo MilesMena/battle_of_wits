@@ -30,6 +30,9 @@ Joel:
     - 1-2 example: question and answer
 
 
+maybe: 
+- add defending agent guess where the "poison" is
+
 
 # Questions
 
