@@ -35,6 +35,10 @@ class BattleOfWits():
 
 
     def ensure_csv_header(self):
+        if not os.path.exists("results"):
+            os.mkdir("results")
+        if not os.path.exists(f"results/{self.model}"):
+            os.mkdir(f"results/{self.model}")
         # Check if the CSV file exists and has content
         file_exists = os.path.isfile(self.csv_path)
         if not file_exists or os.stat(self.csv_path).st_size == 0:
@@ -124,12 +128,13 @@ class BattleOfWits():
 if __name__ == "__main__":
     dispositions = ["Truthful", "Deceitful"]
     locations = ["A","B"]
-    rounds_per = 50
-
+    rounds_per = 100
+    models = ['gemma:7b', 'llama3.1:405b']
+    # ERROR: model requires more system memory (234.2 GiB) than is available (48.3 GiB) (status code: 500)
     for i in range(2):
         for j in range(2):
-            bw = BattleOfWits("gemma:7b", locations[0], dispositions[i], dispositions[j])
-            bw.async_multi_battle(rounds_per, 4) 
+            bw = BattleOfWits(models[0], locations[0], dispositions[i], dispositions[j])
+            bw.async_multi_battle(rounds_per, 6) 
 
     # bw.multi_battle(5)
     # 4 workers (gemma:2b) uses %538 of %1200 (I have 12 cores)

@@ -3,6 +3,8 @@ import re
 import pandas as pd
 import numpy as np
 import os
+import seaborn as sns
+import matplotlib.pyplot as plt
 # from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 
 
@@ -60,17 +62,29 @@ class ResultParser:
         print(f"Results written")
 
     def plot_heatmap(self):
-        # labels = ['Truthful', 'Deceitful']
-        # df = pd.DataFrame(index=labels, columns=labels)
+   
 
-        # Assuming self.df_output is your DataFrame
         df = self.df_output.copy()
+
+        # Group by the two factors and sum the 'Correct' column
         result = df.groupby(['Defending Disposition', 'Asking Belief'])['Correct'].sum().reset_index()
         result.rename(columns={'Correct': 'Correct_Count'}, inplace=True)
 
+        # Pivot the grouped DataFrame (this was the incorrect line)
+        pivot = result.pivot(index='Asking Belief', columns='Defending Disposition', values='Correct_Count')
+
+        # Plot
+        sns.heatmap(pivot, annot=True, cmap="YlGnBu", fmt='d')
+        plt.title(f"{model}: Correct Count by Defending Disposition vs Asking Belief")
+        plt.xlabel("Asking Belief")
+        plt.ylabel("Defending Disposition")
+        plt.tight_layout()
+        plt.savefig(f"plots/{model}_defend_disp_vs_ask_belief.png")
+
         print(result)
 
-        pass
+
+        
 
 
 if __name__ == "__main__":
