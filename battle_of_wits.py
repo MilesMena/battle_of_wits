@@ -38,13 +38,13 @@ class BattleOfWits():
         self.asking_belief = ask_belief
         
         self.rel_path = os.path.dirname(__file__)
-        results_path = os.path.join(rel_path, f"results/{model}")
+        results_path = os.path.join(self.rel_path, f"results/{model}/prompt_shot_{prompt_shot}")
         file_name = f"{model}_output.csv"
         self.csv_path = os.path.join(results_path, file_name)
         self.ensure_csv_header()
         self.exec_times = []
         print(f"Initialized with model={model}, location={location}, defending_disposition={defend_disp}, asking_belief={ask_belief}")
-
+        self.ensure_prompt_dirs()
 
     def ensure_csv_header(self):
         ''' 
@@ -104,15 +104,15 @@ class BattleOfWits():
     def single_battle(self, iter):
         try:
             start_time = time.time()  # Record the start time
-            gen_questions_prompt = self.read_txt("prompts/prompt_agent2_ask.txt")
+            gen_questions_prompt = self.read_txt(f"prompts/prompt_shot_{self.prompt_shot}/prompt_agent2_ask.txt")
             filled_gen_question_prompt = self.replace_prompt_vars(gen_questions_prompt)
             questions = self.send_chat(filled_gen_question_prompt)
             # ANSWER Question
-            ans_q_prompt = self.read_txt("prompts/prompt_agent1.txt")
+            ans_q_prompt = self.read_txt(f"prompts/prompt_shot_{self.prompt_shot}/prompt_agent1.txt")
             filled_ans_q_prompt = self.replace_prompt_vars(ans_q_prompt, {'location': self.location, 'questions': questions})
             response = self.send_chat(filled_ans_q_prompt)
             # PICK box
-            pick_box_prompt = self.read_txt("prompts/prompt_agent2_pick.txt")
+            pick_box_prompt = self.read_txt(f"prompts/prompt_shot_{self.prompt_shot}/prompt_agent2_pick.txt")
             filled_pick_box_prompt = self.replace_prompt_vars(pick_box_prompt, {'questions':questions, 'response':response})
             answer = self.send_chat(filled_pick_box_prompt)
             end_time = time.time()  # Record the end time
@@ -138,11 +138,8 @@ class BattleOfWits():
             pool.join()
     
     def write_to_csv(self, res):
-        if not os.path.exists("results"):
-            os.mkdir("results")
-        if not os.path.exists(f"results/{self.model}"):
-            os.mkdir(f"results/{self.model}")
-
+        if not os.path.exists(f"results/{self.model}/prompt_shot_{self.prompt_shot}"):
+            os.mkdir(f"results/{self.model}/prompt_shot_{self.prompt_shot}")
 
         with open(self.csv_path, mode='a', newline='') as file:
             writer = csv.writer(file, quoting=csv.QUOTE_ALL)
@@ -156,15 +153,17 @@ class BattleOfWits():
 
 
 if __name__ == "__main__":
-    prompt_shot = 0 #0,1,2
+    prompt_shot = 1 #0,1,2
     dispositions = ["Truthful", "Deceitful"]
     locations = ["A","B"]
     rounds_per = 50
 
-    for i in range(2):
-        for j in range(2):
-            bw = BattleOfWits("gemma:7b", prompt_shot, locations[0], dispositions[i], dispositions[j])
-            bw.async_multi_battle(rounds_per, 4)
+    bw = BattleOfWits("gemma:7b", prompt_shot, locations[0], dispositions[0], dispositions[1])
+    bw.async_multi_battle(rounds_per, 4)
+    # for i in range(2):
+    #     for j in range(2):
+    #         bw = BattleOfWits("gemma:7b", prompt_shot, locations[0], dispositions[i], dispositions[j])
+    #         bw.async_multi_battle(rounds_per, 4)
 
     # bw.multi_battle(5)
     # 4 workers (gemma:2b) uses %538 of %1200 (I have 12 cores)
