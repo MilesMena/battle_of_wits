@@ -79,7 +79,7 @@ class BattleOfWits():
     def read_txt(self, filename):
         """
         Reads the entire content of a text file.
-
+        Catches FileNotFoundError and other exceptions nicely.
         Args:
             filename (str): The path to the text file.
 
