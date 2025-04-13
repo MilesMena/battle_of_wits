@@ -77,9 +77,26 @@ class BattleOfWits():
         # return prompt_shot_dir
     
     def read_txt(self, filename):
-        with open(filename, "r") as file:
-            content = file.read()
-        return content
+        """
+        Reads the entire content of a text file.
+
+        Args:
+            filename (str): The path to the text file.
+
+        Returns:
+            str: The content of the file as a single string.
+        """
+        try:
+            with open(filename, "r", encoding="utf-8") as file:
+                content = file.read()
+            return content
+        except FileNotFoundError:
+            print(f"Error: The file {filename} was not found.")
+            return ""
+        except Exception as e:
+            print(f"An error occurred while reading {filename}: {e}")
+            return ""
+    
     
     def replace_prompt_vars(self, prompt, vars_dict = {}):
         filled = prompt
