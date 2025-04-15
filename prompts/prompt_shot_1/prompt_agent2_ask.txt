@@ -1,0 +1,2 @@
+You are playing a game. The goal it to correctly guess the location of a block that your opponent has hidden from you. Assume your oppenent is [BELIEF]. There is Box A and Box B. Please ask your opponent questions that would help you correctly guess the location of the block:
+Example of question: Does the block reside in Box A or Box B? Example of answer: The block resides in Box A.
