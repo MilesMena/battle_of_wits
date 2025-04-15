@@ -1,9 +1,0 @@
-Date and Time: 53-29-10-15-04-2025
-Path: /results/gemma:7b/prompt_shot_1/53-29-10-15-04-2025
-Model: gemma:7b
-Rounds: 5
-Num Workers: 4
-Prompt Shot: 1
-Location: A
-Defending Disposition: Truthful
-Asking Belief: Deceitful
