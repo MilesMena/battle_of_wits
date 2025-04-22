@@ -16,7 +16,7 @@ def time_me(func):
         return result
 
 class BattleOfWits():
-    def __init__(self, model, prompt_shot, location, defend_disp, ask_belief):
+    def __init__(self, model, prompt_shot,date_time, location, defend_disp, ask_belief):
         '''
         Arguments:
             Inputs: 
@@ -39,7 +39,7 @@ class BattleOfWits():
         self.defending_disposition = defend_disp
         self.asking_belief = ask_belief
         
-        self.date_time = time.strftime("%S-%M-%H-%d-%m-%Y") 
+        self.date_time = date_time
         self.rel_path = os.path.dirname(__file__)
         self.results_path = os.path.join(
             self.rel_path, 
@@ -180,7 +180,7 @@ class BattleOfWits():
             answer = self.send_chat(filled_pick_box_prompt)
             end_time = time.time()  # Record the end time
             execution_time = end_time - start_time
-            # self.exec_times.append(execution_time)
+            self.exec_times.append(execution_time)
             print(f"Iter: {iter}  | Location: {self.location} | Defending: {self.defending_disposition} | Asking: {self.asking_belief} | exec time: {execution_time:.6f}s")
             # Write data to CSV
             return [iter,f"{execution_time:.6f}",self.location, self.defending_disposition, self.asking_belief, self.sanitize(questions), self.sanitize(response), self.sanitize(answer)]
@@ -252,30 +252,31 @@ class BattleOfWits():
 
 
 if __name__ == "__main__":
+    date_time = time.strftime("%S-%M-%H-%d-%m-%Y") 
     prompt_shot = 1 #0,1,2
     dispositions = ["Truthful", "Deceitful"]
     locations = ["A","B"]
-    rounds_per = 5
+    rounds_per = 20
 
-    bw = BattleOfWits("gemma:7b", prompt_shot, locations[0], dispositions[0], dispositions[1])
-    bw.async_multi_battle(rounds_per, 4)
+    # bw = BattleOfWits("gemma:7b", prompt_shot, locations[0], dispositions[0], dispositions[1])
+    # bw.async_multi_battle(rounds_per, 4)
 
-    # for i in range(2):
-    #     for j in range(2):
-    #         bw = BattleOfWits("gemma:7b", prompt_shot, locations[0], dispositions[i], dispositions[j])
-    #         bw.async_multi_battle(rounds_per, 4)
+    for i in range(2):
+        for j in range(2):
+            bw = BattleOfWits("gemma:7b", prompt_shot,date_time, locations[0], dispositions[i], dispositions[j])
+            bw.async_multi_battle(rounds_per, 4)
 
-    # bw.multi_battle(5)
+    bw.multi_battle(5)
     # 4 workers (gemma:2b) uses %538 of %1200 (I have 12 cores)
     # 4 workers (gemma:7b) uses %600 
 
     
 
-    # mean = np.mean(bw.exec_times)
-    # std = np.std(bw.exec_times)
+    mean = np.mean(bw.exec_times)
+    std = np.std(bw.exec_times)
 
-    # print(f"AVG EXEC TIME: {mean}")
-    # print(f"STD EXEC TIME {std}")
+    print(f"AVG EXEC TIME: {mean}")
+    print(f"STD EXEC TIME {std}")
         
     
 
