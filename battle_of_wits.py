@@ -38,6 +38,8 @@ class BattleOfWits():
         self.location = location
         self.defending_disposition = defend_disp
         self.asking_belief = ask_belief
+        self.question_count = 0
+        self.max_questions = 3
         
         self.date_time = date_time
         self.rel_path = os.path.dirname(__file__)
@@ -144,44 +146,97 @@ class BattleOfWits():
             return ""
     
     
-    def replace_prompt_vars(self, prompt, vars_dict = {}):
+    def replace_prompt_vars(self, prompt, vars_dict={}):
         filled = prompt
         if "[LOCATION]" in filled:
-            filled = filled.replace("[LOCATION]", vars_dict['location'])
+            filled = filled.replace("[LOCATION]", vars_dict.get('location', 'Unknown'))
         if "[QUESTIONS]" in filled:
-            filled = filled.replace("[QUESTIONS]", vars_dict['questions'])
+            filled = filled.replace("[QUESTIONS]", vars_dict.get('questions', ''))
         if "[RESPONSE]" in filled:
-            filled = filled.replace("[RESPONSE]", vars_dict['response'])
+            filled = filled.replace("[RESPONSE]", vars_dict.get('response', ''))
         if "[DISPOSITION]" in filled:
             filled = filled.replace("[DISPOSITION]", self.defending_disposition)
         if "[BELIEF]" in filled:
             filled = filled.replace("[BELIEF]", self.asking_belief)
+        if "[NUM_QUESTIONS]" in filled:
+            filled = filled.replace("[NUM_QUESTIONS]", str(vars_dict.get('num_questions', self.max_questions)))
         return filled
 
     ## Can't be named chat bc ollama
     def send_chat(self, prompt):
+        if self.question_count >= self.max_questions:
+            return "Maximum number of questions reached."
+        
         m = [{'role': 'user', 'content': prompt}]  # Make it a list
-        response = ollama.chat(model=self.model,messages = m)
+        response = ollama.chat(model=self.model, messages=m)
+        
+        self.question_count += 1
+        
         return response['message']['content']
+    
+    
+    def send_chat_ask(self, max_retries: int = 3) -> str:
+        template = self.read_txt(
+            f"prompts/prompt_shot_{self.prompt_shot}/prompt_agent2_ask.txt")
+        base_prompt = self.replace_prompt_vars(template)     # inject NUM_QUESTIONS
+
+
+        print("sending prompt" + base_prompt)
+        attempt = 0
+        while attempt < max_retries:
+            attempt += 1
+            raw = ollama.chat(self.model, [{"role": "user", "content": base_prompt}])[
+                "message"]["content"]
+            cleaned = raw.strip()
+
+            # --- validation ----------------------------------------------------
+            # crude count of Qs
+            qmarks = cleaned.count("?")
+            too_many = qmarks > self.max_questions or qmarks == 0
+            # optional list detection
+            bad_numbering = re.search(r"^\s*\d+\.", cleaned, re.M) is not None \
+                            and qmarks > 1      # treat list as multi‑question
+
+            if not (too_many or bad_numbering):
+                self.question_count += qmarks 
+                # correct accounting
+                print("question:", cleaned)
+                return cleaned                       # return the whole block
+
+            # --- rejection -----------------------------------------------------
+            print(f"[WARN] invalid question set (attempt {attempt}): {cleaned[:120]}…")
+            base_prompt = (
+                f"Your previous reply contained {qmarks} question(s). "
+                f"Reply again with EXACTLY {self.max_questions} question(s), "
+                "each ending with a '?' and no extra sentences.\n\n"
+                + self.replace_prompt_vars(template))
+
+        raise RuntimeError(
+            f"Failed to obtain {self.max_questions} valid question(s) "
+            f"after {max_retries} attempts.")
+        
+
+    
+    
     
     def single_battle(self, iter):
         try:
             start_time = time.time()  # Record the start time
-            gen_questions_prompt = self.read_txt(f"prompts/prompt_shot_{self.prompt_shot}/prompt_agent2_ask.txt")
-            filled_gen_question_prompt = self.replace_prompt_vars(gen_questions_prompt)
-            questions = self.send_chat(filled_gen_question_prompt)
+            # filled_gen_question_prompt = self.replace_prompt_vars(gen_questions_prompt)
+            questions = self.send_chat_ask()
+
             # ANSWER Question
-            ans_q_prompt = self.read_txt(f"prompts/prompt_shot_{self.prompt_shot}/prompt_agent1.txt")
-            filled_ans_q_prompt = self.replace_prompt_vars(ans_q_prompt, {'location': self.location, 'questions': questions})
-            response = self.send_chat(filled_ans_q_prompt)
-            # PICK box
-            pick_box_prompt = self.read_txt(f"prompts/prompt_shot_{self.prompt_shot}/prompt_agent2_pick.txt")
-            filled_pick_box_prompt = self.replace_prompt_vars(pick_box_prompt, {'questions':questions, 'response':response})
-            answer = self.send_chat(filled_pick_box_prompt)
+            # ans_q_prompt = self.read_txt(f"prompts/prompt_shot_{self.prompt_shot}/prompt_agent1.txt")
+            # filled_ans_q_prompt = self.replace_prompt_vars(ans_q_prompt, {'location': self.location, 'questions': questions})
+            # response = self.send_chat(filled_ans_q_prompt)
+            # # PICK box
+            # pick_box_prompt = self.read_txt(f"prompts/prompt_shot_{self.prompt_shot}/prompt_agent2_pick.txt")
+            # filled_pick_box_prompt = self.replace_prompt_vars(pick_box_prompt, {'questions':questions, 'response':response})
+            # answer = self.send_chat(filled_pick_box_prompt)
             end_time = time.time()  # Record the end time
             execution_time = end_time - start_time
             self.exec_times.append(execution_time)
-            print(f"Iter: {iter}  | Location: {self.location} | Defending: {self.defending_disposition} | Asking: {self.asking_belief} | exec time: {execution_time:.6f}s")
+            # print(f"Iter: {iter}  | Location: {self.location} | Defending: {self.defending_disposition} | Asking: {self.asking_belief} | exec time: {execution_time:.6f}s")
             # Write data to CSV
             return [iter,f"{execution_time:.6f}",self.location, self.defending_disposition, self.asking_belief, self.sanitize(questions), self.sanitize(response), self.sanitize(answer)]
         except Exception as e:
@@ -258,8 +313,17 @@ if __name__ == "__main__":
     locations = ["A","B"]
     rounds_per = 20
 
+    # Additional Restrictions for question restrictions:
+    num_questions = 2
+    num_rounds = 1
+
+
     # bw = BattleOfWits("gemma:7b", prompt_shot, locations[0], dispositions[0], dispositions[1])
     # bw.async_multi_battle(rounds_per, 4)
+
+
+
+
 
     for i in range(2):
         for j in range(2):
