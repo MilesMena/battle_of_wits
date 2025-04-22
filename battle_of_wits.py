@@ -256,7 +256,7 @@ if __name__ == "__main__":
     prompt_shot = 1 #0,1,2
     dispositions = ["Truthful", "Deceitful"]
     locations = ["A","B"]
-    rounds_per = 2
+    rounds_per = 20
 
     # bw = BattleOfWits("gemma:7b", prompt_shot, locations[0], dispositions[0], dispositions[1])
     # bw.async_multi_battle(rounds_per, 4)
