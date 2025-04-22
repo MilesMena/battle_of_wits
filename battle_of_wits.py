@@ -16,7 +16,7 @@ def time_me(func):
         return result
 
 class BattleOfWits():
-    def __init__(self, model, prompt_shot,date_time, location, defend_disp, ask_belief):
+    def __init__(self, model, prompt_shot,num_questions, date_time, location, defend_disp, ask_belief):
         '''
         Arguments:
             Inputs: 
@@ -39,7 +39,7 @@ class BattleOfWits():
         self.defending_disposition = defend_disp
         self.asking_belief = ask_belief
         self.question_count = 0
-        self.max_questions = 3
+        self.max_questions = num_questions
         
         self.date_time = date_time
         self.rel_path = os.path.dirname(__file__)
@@ -162,7 +162,6 @@ class BattleOfWits():
             filled = filled.replace("[NUM_QUESTIONS]", str(vars_dict.get('num_questions', self.max_questions)))
         return filled
 
-    ## Can't be named chat bc ollama
     def send_chat(self, prompt):
         if self.question_count >= self.max_questions:
             return "Maximum number of questions reached."
@@ -172,8 +171,7 @@ class BattleOfWits():
         
         self.question_count += 1
         
-        return response['message']['content']
-    
+        return response['message']['content'] 
     
     def send_chat_ask(self, max_retries: int = 3) -> str:
         template = self.read_txt(
@@ -181,7 +179,6 @@ class BattleOfWits():
         base_prompt = self.replace_prompt_vars(template)     # inject NUM_QUESTIONS
 
 
-        print("sending prompt" + base_prompt)
         attempt = 0
         while attempt < max_retries:
             attempt += 1
@@ -215,10 +212,19 @@ class BattleOfWits():
             f"Failed to obtain {self.max_questions} valid question(s) "
             f"after {max_retries} attempts.")
         
-
+    def send_chat_answer(self, questions):
+            ans_q_prompt = self.read_txt(f"prompts/prompt_shot_{self.prompt_shot}/prompt_agent1.txt")
+            filled_ans_q_prompt = self.replace_prompt_vars(ans_q_prompt, {'location': self.location, 'questions': questions})
+            response = self.send_chat(filled_ans_q_prompt)    
+            return response
     
     
-    
+    def send_chat_pick(self, questions, response):
+            pick_box_prompt = self.read_txt(f"prompts/prompt_shot_{self.prompt_shot}/prompt_agent2_pick.txt")
+            filled_pick_box_prompt = self.replace_prompt_vars(pick_box_prompt, {'questions':questions, 'response':response})
+            answer = self.send_chat(filled_pick_box_prompt)
+            return answer
+            
     def single_battle(self, iter):
         try:
             start_time = time.time()  # Record the start time
@@ -226,19 +232,16 @@ class BattleOfWits():
             questions = self.send_chat_ask()
 
             # ANSWER Question
-            # ans_q_prompt = self.read_txt(f"prompts/prompt_shot_{self.prompt_shot}/prompt_agent1.txt")
-            # filled_ans_q_prompt = self.replace_prompt_vars(ans_q_prompt, {'location': self.location, 'questions': questions})
-            # response = self.send_chat(filled_ans_q_prompt)
+            answer_response = self.send_chat_answer(questions)
             # # PICK box
-            # pick_box_prompt = self.read_txt(f"prompts/prompt_shot_{self.prompt_shot}/prompt_agent2_pick.txt")
-            # filled_pick_box_prompt = self.replace_prompt_vars(pick_box_prompt, {'questions':questions, 'response':response})
-            # answer = self.send_chat(filled_pick_box_prompt)
+            final_answer = self.send_chat_pick(questions, answer_response)
+
             end_time = time.time()  # Record the end time
             execution_time = end_time - start_time
             self.exec_times.append(execution_time)
-            # print(f"Iter: {iter}  | Location: {self.location} | Defending: {self.defending_disposition} | Asking: {self.asking_belief} | exec time: {execution_time:.6f}s")
+            print(f"Iter: {iter}  | Location: {self.location} | Defending: {self.defending_disposition} | Asking: {self.asking_belief} | exec time: {execution_time:.6f}s")
             # Write data to CSV
-            return [iter,f"{execution_time:.6f}",self.location, self.defending_disposition, self.asking_belief, self.sanitize(questions), self.sanitize(response), self.sanitize(answer)]
+            return [iter,f"{execution_time:.6f}",self.location, self.defending_disposition, self.asking_belief, self.sanitize(questions), self.sanitize(answer_response), self.sanitize(final_answer)]
         except Exception as e:
             print(f"ERROR: {e}")
 
@@ -249,14 +252,13 @@ class BattleOfWits():
             self.write_to_csv(result)
 
     def async_multi_battle(self, n, num_workers):
-        self.write_config_file(n, num_workers)
+        
         with multiprocessing.Pool(processes=num_workers) as pool:
             for i in range(n):
                 pool.apply_async(self.single_battle, args = (i,), callback=self.write_to_csv)
             pool.close()
             pool.join()
-            
-    
+        self.write_config_file(n, num_workers)    
     def write_to_csv(self, res):
         '''
             Writes the results of the battle to a csv file
@@ -293,6 +295,7 @@ class BattleOfWits():
             file.write(f"Location: {self.location}\n")
             file.write(f"Defending Disposition: {self.defending_disposition}\n")
             file.write(f"Asking Belief: {self.asking_belief}\n")
+            file.write(f"Max Questions: {self.max_questions}\n")
             
             
             
@@ -327,7 +330,7 @@ if __name__ == "__main__":
 
     for i in range(2):
         for j in range(2):
-            bw = BattleOfWits("gemma:7b", prompt_shot,date_time, locations[0], dispositions[i], dispositions[j])
+            bw = BattleOfWits("gemma:7b", prompt_shot, num_questions, date_time, locations[0], dispositions[i], dispositions[j])
             bw.async_multi_battle(rounds_per, 4)
 
     bw.multi_battle(5)
