@@ -253,18 +253,18 @@ class BattleOfWits():
 
 if __name__ == "__main__":
     date_time = time.strftime("%S-%M-%H-%d-%m-%Y") 
-    prompt_shot = 1 #0,1,2
+    prompt_shots = 2 #0,1,2
     dispositions = ["Truthful", "Deceitful"]
     locations = ["A","B"]
-    rounds_per = 20
+    rounds_per = 100
 
     # bw = BattleOfWits("gemma:7b", prompt_shot, locations[0], dispositions[0], dispositions[1])
     # bw.async_multi_battle(rounds_per, 4)
-
-    for i in range(2):
-        for j in range(2):
-            bw = BattleOfWits("gemma:7b", prompt_shot,date_time, locations[0], dispositions[i], dispositions[j])
-            bw.async_multi_battle(rounds_per, 4)
+    for p_shot in range(prompt_shots + 1):
+        for i in range(2):
+            for j in range(2):
+                bw = BattleOfWits("gemma:7b", p_shot,date_time, locations[0], dispositions[i], dispositions[j])
+                bw.async_multi_battle(rounds_per, 4)
 
     bw.multi_battle(5)
     # 4 workers (gemma:2b) uses %538 of %1200 (I have 12 cores)

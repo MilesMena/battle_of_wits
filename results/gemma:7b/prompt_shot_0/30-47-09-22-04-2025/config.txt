@@ -1,0 +1,9 @@
+Date and Time: 30-47-09-22-04-2025
+Path: /results/gemma:7b/prompt_shot_0/30-47-09-22-04-2025
+Model: gemma:7b
+Rounds: 100
+Num Workers: 4
+Prompt Shot: 0
+Location: A
+Defending Disposition: Deceitful
+Asking Belief: Deceitful
